@@ -1,9 +1,11 @@
 #    https://shiny.posit.co/
 
 library(shiny)
+library(leaflet)
 
 # Define UI for application that draws a histogram
 fluidPage(
+  leafletOutput("map"),
 
     # Application title
     titlePanel("Old Faithful Geyser Data"),

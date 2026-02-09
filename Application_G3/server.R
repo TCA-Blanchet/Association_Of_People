@@ -1,9 +1,15 @@
 #    https://shiny.posit.co/
 
 library(shiny)
+library(leaflet)
 
 # Define server logic required to draw a histogram
 function(input, output, session) {
+  output$map <- renderLeaflet({ 
+    leaflet() |> 
+      addTiles() |> 
+      setView(4.00000000000000, 47.0000000000000, zoom = 5) 
+  })
 
     output$distPlot <- renderPlot({
 
