@@ -1,6 +1,6 @@
 ---
 title: "Présentation d'Idée d'Application avec Shiny"
-author: "Garrel Julian,GADJEU Kevine, Glory NDUMCHOP, BLANCHET Tibault"
+author: "GARREL Julian, GADJEU Kevine, NDUMCHOP Glory, BLANCHET Tibault"
 date: "`r format(Sys.time(), '%d %B %Y')`"
 output:
   pdf_document:
