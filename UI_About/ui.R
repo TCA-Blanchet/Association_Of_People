@@ -3,7 +3,7 @@
 library(shiny)
 library(leaflet)
 
-# Define UI for application that draws a histogram
+# Define UI for application
 fluidPage(
   titlePanel("Carte des AOP Françaises"), 
   
@@ -12,28 +12,62 @@ fluidPage(
     tabPanel("About",
              titlePanel("L'Equipe"),
              
-             # Section des membres du groupe
+             # Zones d'informations modifiables pour chaque membre
              fluidRow(
-               column(width = 12,
-                      tags$ul(
-                        tags$li(strong("Louis")),
-                        tags$li(strong("Kevine")),
-                        tags$li(strong("Tibault")),
-                        tags$li(strong("Glory"))
+               column(width = 3,
+                      wellPanel(
+                        h4("Julien"),
+                        p("Infos sur Julien : [Saisir ici]") 
+                      )
+               ),
+               column(width = 3,
+                      wellPanel(
+                        h4("Kevine"),
+                        p("Infos sur Kevine : [Saisir ici]") 
+                      )
+               ),
+               column(width = 3,
+                      wellPanel(
+                        h4("Tibault"),
+                        p("Infos sur Tibault : [Saisir ici]") 
+                      )
+               ),
+               column(width = 3,
+                      wellPanel(
+                        h4("Glory"),
+                        p("Infos sur Glory : [Saisir ici]") 
                       )
                )
              ),
              
-             fluidRow(column(width = 4),
-                      column(width = 2, offset = 3)),
-             fluidRow(column(width = 12)),
-             ),
+             # Espacement visuel
+             fluidRow(column(width = 12, hr())),
              
-             sidebarLayout(
-               sidebarPanel(),
-               mainPanel(leafletOutput("map")
-               )
-             
+             # Vos sélections d'icônes
+             checkboxGroupInput("icons", "Choose icons:",
+                                choiceNames =
+                                  list(icon("calendar"), icon("bed"),
+                                       icon("cog"), icon("bug")),
+                                choiceValues =
+                                  list("calendar", "bed", "cog", "bug")
              )
+    ),
+    
+    # Onglet pour la carte
+    tabPanel("Carte",
+             sidebarLayout(
+               sidebarPanel(
+                 helpText("Utilisez les options ci-dessous pour filtrer la carte."),
+                 checkboxGroupInput("variable", "Variables à afficher :",
+                                    c("Cylinders" = "cyl",
+                                      "Transmission" = "am",
+                                      "Gears" = "gear"))
+               ),
+               mainPanel(
+                 leafletOutput("map", height = "600px")
+               )
+             )
+    )
+    
   )# fermeture tabsetPanel
 )# fermeture Fluidpage
