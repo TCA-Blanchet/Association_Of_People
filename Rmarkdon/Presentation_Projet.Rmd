@@ -44,6 +44,8 @@ Nous nous sommes séparé les tâches : Glory sur l'UI pour la page d'accueil et
 Concernant le traitement des données, nous sommes partie de nos données .shp, nous avons dû avons les transformer géométriquement afin de les passer en WGS 84. Ensuite Julian a fait une jointure gauche entre notre catégorisation des AOPs et notre fichier commune.shp.
 Afin de faciliter la lecture de la carte et de ne pas la surcharger la carte avec les zones géographiques des AOPs, Julian a calculer les centroides de chaque AOPs afin de ne faire apparaître qu'un unique point par AOP. Suite à cela nous avons enregistrer le fruit de nos calculs sur différents fichiers afin ne pas refaire faire les calcules à l'ouverture de l'application mais uniquement de la lecture des résultats.
 
+Glory: sur la partie Ui, j'ai fait une barre déroulante des produits regroupés en 4 catégories: boissons, produits laitiers, produits carnés et autres. J'ai assi fait une déroulante afin de permettre à l'utilisateur de trier par région. J'ai également fait des recherches afin apporter plus de couleurs dans l'interface, mais je n'ai pas encore obtenu des résultats qui marchent. 
+
 ## Liens
 
 ISARA : <https://isaranet.fr/> consulté le ...
