@@ -11,7 +11,7 @@ fluidPage(
     tabPanel("Accueil",
              titlePanel("Accueil"),
              
-             leafletOutput("map"),
+             
              imageOutput("isara_logo"),
              
              # Application title
@@ -34,7 +34,8 @@ fluidPage(
               ) # fermeture sidebarLayout
     ),# fermeture tabPanel
     tabPanel("Carte AOP",
-             titlePanel("Carte Intéractive des AOP")
+             titlePanel("Carte Intéractive des AOP"),
+             leafletOutput("map")
     ), 
     tabPanel("About",
              titlePanel("L'Equipe")
