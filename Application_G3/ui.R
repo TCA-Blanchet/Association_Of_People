@@ -11,6 +11,9 @@ fluidPage(
     tabPanel("Accueil",
              titlePanel("Accueil"),
              
+             passwordInput("password", "Password:"),
+             actionButton("go", "Go"),
+             verbatimTextOutput("value"), 
              
              imageOutput("isara_logo"),
              
