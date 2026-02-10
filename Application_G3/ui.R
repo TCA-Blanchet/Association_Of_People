@@ -84,6 +84,7 @@ fluidPage(
                                 c("Cylinders" = "cyl",
                                   "Transmission" = "am",
                                   "Gears" = "gear"))
+             
     ) # fermeture tabPanel About
   ) # fermeture tabsetPanel
 ) # fermeture fluidPage
