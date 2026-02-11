@@ -2,6 +2,7 @@ library(shiny)
 library(sf)
 library(leaflet)
 library(dplyr)
+library(bslib)
 
 if (!dir.exists("data/processed")) {
   stop("ERREUR : Le dossier 'data/processed' introuvable.\n",
@@ -13,9 +14,9 @@ departements <- readRDS("data/processed/departements.rds")
 aop_communes <- readRDS("data/processed/aop_communes.rds")
 aop_centroides <- readRDS("data/processed/aop_centroides.rds")
 
-# Extraire les catégories uniques de la colonne 'categorie'
 categories_uniques <- sort(unique(aop_centroides$categorie))
 liste_aop <- sort(unique(aop_centroides$AOP))
+liste_departements <- c("Tous les départements" = "", sort(unique(departements$NOM_M)))
 
 # ===== UI =====
 ui <- fluidPage(
@@ -44,17 +45,19 @@ ui <- fluidPage(
     ),
     
     tabPanel("Carte AOP",
-             titlePanel("Carte Interactive des AOP de France"),
+             titlePanel("Carte Interactive des AOP"),
              
              sidebarLayout(
                sidebarPanel(
                  width = 4,
                  
-                 selectInput("departement", "Département :",
-                             choices = c("Toute la France" = "", sort(unique(departements$NOM_M)))),
+                 selectInput("departement", "Département :", 
+                             choices = liste_departements,
+                             selected = ""),
                  
-                 selectInput("aop_selectionnee", "AOP :",
-                             choices = c("Aucune" = "", liste_aop)),
+                 selectInput("aop_selectionnee", "AOP :", 
+                             choices = c("Aucune" = "", liste_aop),
+                             selected = ""), 
                  
                  div(style = "display: flex; gap: 5px; margin-bottom: 10px;",
                      actionButton("reset_dept", "Réinit. Dept", icon = icon("map"), 
@@ -64,7 +67,7 @@ ui <- fluidPage(
                  
                  hr(),
                  checkboxGroupInput("categories", "Catégories d'AOP :",
-                                    choices = categories_uniques, 
+                                    choices = categories_uniques,
                                     selected = categories_uniques),
                  hr(),
                  verbatimTextOutput("info_selection")
@@ -105,14 +108,19 @@ server <- function(input, output, session) {
                        options = layersControlOptions(collapsed = FALSE))
   })
   
-  observeEvent(input$reset_dept, updateSelectInput(session, "departement", selected = ""))
-  observeEvent(input$reset_aop, updateSelectInput(session, "aop_selectionnee", selected = ""))
+  observeEvent(input$reset_dept, {
+    updateSelectInput(session, "departement", selected = "")
+  })
+  
+  observeEvent(input$reset_aop, {
+    updateSelectInput(session, "aop_selectionnee", selected = "")
+  })
   
   observe({
     aop_disponibles <- aop_centroides %>% 
       filter(categorie %in% input$categories)
     
-    if (input$departement != "") {
+    if (!is.null(input$departement) && input$departement != "") {
       dept_selectionne <- departements %>% filter(NOM_M == input$departement)
       aop_dept_ids <- aop_communes %>%
         filter(INSEE_DEP %in% dept_selectionne$INSEE_DEP) %>%
@@ -129,14 +137,14 @@ server <- function(input, output, session) {
   })
   
   aop_filtrees <- reactive({
-    if (length(input$categories) == 0) {
-      return(aop_centroides[0, ])  # Dataframe vide avec la même structure
+    if (is.null(input$categories) || length(input$categories) == 0) {
+      return(aop_centroides[0, ]) 
     }
     aop_centroides %>% filter(categorie %in% input$categories)
   })
   
   observe({
-    if (length(input$categories) == 0) {
+    if (is.null(input$categories) || length(input$categories) == 0) {
       leafletProxy("carte") %>%
         clearGroup("departements") %>%
         clearGroup("markers") %>%
@@ -149,7 +157,8 @@ server <- function(input, output, session) {
     
     aop_points <- aop_filtrees()
     
-    if (input$departement != "" && input$aop_selectionnee == "") {
+    if (!is.null(input$departement) && input$departement != "" && 
+        (is.null(input$aop_selectionnee) || input$aop_selectionnee == "")) {
       dept_selectionne <- departements %>% filter(NOM_M == input$departement)
       aop_dept_ids <- aop_communes %>%
         filter(INSEE_DEP %in% dept_selectionne$INSEE_DEP) %>%
@@ -158,9 +167,8 @@ server <- function(input, output, session) {
       aop_points <- aop_points %>% filter(AOP %in% aop_dept_ids)
     }
     
-    
     # CAS 1 : Une AOP est sélectionnée
-    if (input$aop_selectionnee != "") {
+    if (!is.null(input$aop_selectionnee) && input$aop_selectionnee != "") {
       communes_aop <- aop_communes %>% filter(AOP == input$aop_selectionnee)
       if (nrow(communes_aop) == 0) return()
       
@@ -181,13 +189,13 @@ server <- function(input, output, session) {
                      popup = ~paste0("<strong>", NOM_M, "</strong>"),
                      group = "departements") %>%
         addPolygons(data = communes_aop, fillColor = "#0080ff", fillOpacity = 0.6,
-                    color = "#000fff", weight = 1,
+                    color = "#0000ff", weight = 1,
                     popup = ~paste0("<strong>", Commune, "</strong><br>Département: ", 
                                     Departement, "<br>AOP: ", AOP),
                     highlightOptions = highlightOptions(weight = 2, color = "#0080ff",
                                                         fillOpacity = 0.8, bringToFront = TRUE),
                     group = "communes") %>%
-        addCircleMarkers(data = point_aop, radius = 12, color = "#000fff",
+        addCircleMarkers(data = point_aop, radius = 12, color = "#0000ff",
                          fillColor = "#0080ff", fillOpacity = 1, weight = 3,
                          popup = ~paste0("<strong>", AOP, "</strong><br>Catégorie: ", 
                                          categorie, "<br>Communes: ", n_communes),
@@ -198,7 +206,7 @@ server <- function(input, output, session) {
     }
     
     # CAS 2 : Un département est sélectionné
-    if (input$departement != "") {
+    if (!is.null(input$departement) && input$departement != "") {
       dept_selectionne <- departements %>% filter(NOM_M == input$departement)
       bbox <- st_bbox(dept_selectionne)
       
@@ -210,7 +218,7 @@ server <- function(input, output, session) {
         addPolylines(data = dept_selectionne, color = "#0080ff", weight = 4, opacity = 1,
                      popup = ~paste0("<strong>", NOM_M, "</strong>"),
                      group = "departements") %>%
-        addCircleMarkers(data = aop_points, radius = 8, color = "#000fff",
+        addCircleMarkers(data = aop_points, radius = 8, color = "#0000ff",
                          fillColor = "#0080ff", fillOpacity = 0.9, weight = 2,
                          layerId = ~AOP,
                          popup = ~paste0("<strong>", AOP, "</strong><br>Catégorie: ", 
@@ -239,7 +247,7 @@ server <- function(input, output, session) {
                   color = "#1fc919", weight = 1,
                   popup = ~paste0("<strong>", NOM_M, "</strong>"), layerId = ~NOM_M,
                   group = "departements") %>%
-      addCircleMarkers(data = aop_points, radius = 6, color = "#000fff",
+      addCircleMarkers(data = aop_points, radius = 6, color = "#0000ff",
                        fillColor = "#0080ff", fillOpacity = 0.8, weight = 2,
                        layerId = ~AOP,
                        popup = ~paste0("<strong>", AOP, "</strong><br>Catégorie: ", 
@@ -251,29 +259,33 @@ server <- function(input, output, session) {
   
   observeEvent(input$carte_marker_click, {
     click <- input$carte_marker_click
-    if (!is.null(click$id)) updateSelectInput(session, "aop_selectionnee", selected = click$id)
+    if (!is.null(click$id)) {
+      updateSelectInput(session, "aop_selectionnee", selected = click$id)
+    }
   })
   
   observeEvent(input$carte_shape_click, {
     click <- input$carte_shape_click
-    if (!is.null(click$id)) updateSelectInput(session, "departement", selected = click$id)
+    if (!is.null(click$id)) {
+      updateSelectInput(session, "departement", selected = click$id)
+    }
   })
   
   output$info_selection <- renderText({
-    if (length(input$categories) == 0) {
+    if (is.null(input$categories) || length(input$categories) == 0) {
       return("Aucune catégorie sélectionnée")
     }
     
     n_aop_total <- nrow(aop_filtrees())
     
-    if (input$aop_selectionnee != "") {
+    if (!is.null(input$aop_selectionnee) && input$aop_selectionnee != "") {
       aop_info <- aop_communes %>% filter(AOP == input$aop_selectionnee)
       return(paste0("AOP sélectionnée : ", input$aop_selectionnee, "\n",
                     nrow(aop_info), " communes dans ", 
                     length(unique(aop_info$Departement)), " département(s)"))
     }
     
-    if (input$departement != "") {
+    if (!is.null(input$departement) && input$departement != "") {
       dept_sel <- departements %>% filter(NOM_M == input$departement)
       aop_dept_ids <- aop_communes %>%
         filter(INSEE_DEP %in% dept_sel$INSEE_DEP) %>%
