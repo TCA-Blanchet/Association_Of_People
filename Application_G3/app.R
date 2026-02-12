@@ -3,6 +3,7 @@ library(sf)
 library(leaflet)
 library(dplyr)
 library(bslib)
+library(shinyjs)
 options(shiny.port=4869)
 
 if (!dir.exists("data/processed")) {
@@ -22,26 +23,24 @@ liste_departements <- c("Tous les départements" = "", sort(unique(departements$
 # ===== UI =====
 ui <- fluidPage(
   theme = bs_theme(
-    bg = "white",
-    fg = "blue",
-    primary = "#0d6efd",
-    secondary = "#6c757d",
-    base_font = font_google("Roboto")
+    bg = "#FFFFFF",
+    fg = "#333333",        # Texte gris foncé pour le confort visuel
+    primary = "#D1477D",   # Bordeaux Clair / Framboise profond
+    secondary = "#F8F9FA", # Fond gris très clair pour les contrastes
+    base_font = font_google("Inter"), 
+    heading_font = font_google("Playfair Display")
   ),
   
-  titlePanel("Carte des AOP Françaises"), 
+  titlePanel(h1("Carte des AOP Françaises", style = "font-weight: 500; color: #9A2A56; margin-bottom: 25px;")), 
   
   tabsetPanel(
+    
+    
+    
+    id = "tabs",
     tabPanel("Accueil",
              titlePanel(icon("home"), "Accueil"),
-             passwordInput("password", "Password:"),
-             actionButton("go", "Go"),
-             verbatimTextOutput("value"), 
-             navlistPanel(
-               "Liste",
-               tabPanel("Catégorie produits"),
-               tabPanel("Nom de la région")
-             ),
+             actionButton("go", "Aller à la Carte"),
              imageOutput("aop_image")
     ),
     
@@ -77,15 +76,32 @@ ui <- fluidPage(
                mainPanel(width = 8, leafletOutput("carte", height = "700px"))
              )
     ),
-    
+    useShinyjs(),
     tabPanel("About",
+             tags$head(
+               tags$style(HTML("
+      .btn-float {
+        position: fixed;
+        bottom: 10px;
+        right: 10px;
+        z-index: 9999;
+        background-color: transparent;
+        color: #DAA520;
+        border-radius: 50%;
+        padding: 5px;
+      }
+      #to_top:hover {
+        background-color: #D1477D;
+      }
+    "))
+             ),
              titlePanel("L'Equipe"),
              fluidRow(
                column(width = 3, align = "center",
                       wellPanel(
                         img(src = "Profil_Julian.png", width = "35%", 
                             style = "border-radius: 50%; object-fit: cover; margin-bottom: 15px"),
-                        h4("Julian"),
+                        h4("Julian", style = "border-bottom: 3px solid #D1477D; background: white"),
                         p("Server Développeur") 
                       )
                ),
@@ -93,7 +109,7 @@ ui <- fluidPage(
                       wellPanel(
                         img(src = "Profil_Kevine.png", width = "35%", 
                             style = "border-radius: 50%; object-fit: cover; margin-bottom: 15px"),
-                        h4("Kevine"),
+                        h4("Kevine", style = "border-bottom: 3px solid #D1477D; background: white"),
                         p("UI Développeuse") 
                       )
                ),
@@ -101,7 +117,7 @@ ui <- fluidPage(
                       wellPanel(
                         img(src = "Profil_Tibault.png", width = "35%", 
                             style = "border-radius: 50%; object-fit: cover; margin-bottom: 15px"),
-                        h4("Tibault"),
+                        h4("Tibault", style = "border-bottom: 3px solid #D1477D; background: white"),
                         p("Rapport Ecrivain") 
                       )
                ),
@@ -109,7 +125,7 @@ ui <- fluidPage(
                       wellPanel(
                         img(src = "Profil_Glory.png", width = "35%", 
                             style = "border-radius: 50%; object-fit: cover; margin-bottom: 15px"),
-                        h4("Glory"),
+                        h4("Glory", style = "border-bottom: 3px solid #D1477D; background: white"),
                         p("UI Développeuse") 
                       )
                )
@@ -120,18 +136,24 @@ ui <- fluidPage(
              fluidRow(
                column(width = 12,
                       wellPanel(
-                        h2("Association of Organisation and People"),
-                        p("Description du projet :"),
-                        p("Nous avons choisi de nous pencher sur notre première idée qui est la présentation d'une carte intéractive des différentes AOPs françaises. 
-Pour ce faire nous avons choisi d'utilisé un jeu de donnée .shp comme base de carte afin de n'avoir que les départements et comunnes françaises et non l'entièreté du 
-                          monde avec openstreet map. Ce jeu de donnée issu de notre travail de 3ème année sous QGIS, nous a fait rencontrer quelques problèmes: Les fichiers
-                          étant trop lourds pour gitHub, tibault s'est retrouvé avec un commit qui ne pouvait être push sur le répertoire commun ce qui entraîne un blocage total de la
-                          fonction push depuis Rstudio et la suppression de ces documents demandés eux aussi un commit et un push. Pour régler ce problème, il a esseyé d'utiliser l'interface Git Gui pour dé", style = "text-align: justify"),
-                        style = "background-color: #f8f9fa; border-left: 5px solid #007bff"
+                        h2("Association of Organisation and People", style = "color: #D1477D; font-weight: 600"),
+                        hr(style = "border-top: 2px solid #D1477D; width: 50px; margin-left: 0;"),
+                        p("Description du projet :", style = "color: #9A2A56; letter-spacing: 2px; font-size: 0.8em; font-weight: bold"),
+                        p("Description en attente de rédaction", style = "text-align: justify; color: #444; font-size: 1.1em"),
+                        p("Description en attente de rédaction", style = "text-align: justify; color: #444; font-size: 1.1em"),
+                        p("Description en attente de rédaction", style = "text-align: justify; color: #444; font-size: 1.1em"),
+                        p("Description en attente de rédaction", style = "text-align: justify; color: #444; font-size: 1.1em"),
+                        p("Description en attente de rédaction", style = "text-align: justify; color: #444; font-size: 1.1em"),
+                        p("Description en attente de rédaction", style = "text-align: justify; color: #444; font-size: 1.1em"),
+                        p("Description en attente de rédaction", style = "text-align: justify; color: #444; font-size: 1.1em"),
+                        style = "background-color: #FFF9FB; border: none; border-left: 5px solid #D1477D; border-radius: 4px;"
                       )
                )
-             )
-             
+             ),
+             actionButton("to_top", 
+                          icon = icon("arrow-up"),
+                          label = NULL,
+                          class = "btn-float")
              
     )
   )
@@ -377,6 +399,12 @@ server <- function(input, output, session) {
     }
     
     paste0("France entière : ", n_aop_total, " AOP affichées")
+  })
+  observeEvent(input$go, {
+    updateTabsetPanel(session = session, inputId = "tabs", selected = "Carte AOP")
+  })
+  observeEvent(input$to_top, {
+    runjs("window.scrollTo({top: 0, behavior: 'smooth'});")
   })
 }
 
